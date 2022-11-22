@@ -94,7 +94,7 @@ public class EzenController {
 	public void setPasswordEncoder(BCryptPasswordEncoder passwordEncoder) {
 		this.passwordEncoder = passwordEncoder;
 		Constant.passwordEncoder = passwordEncoder;
-	}
+	} 
 
 	//EzenDao class bean ¡÷¿‘
 	private EzenDao edao;
