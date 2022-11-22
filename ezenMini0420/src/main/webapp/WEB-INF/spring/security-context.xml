@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	<!-- security 관련 설정 element 입력-->
+	<!-- test를 위해 경로(pattern)에 대해 인증/권한 pass 설정 -->
+	<!--  <http pattern="/**" security="none"></http>-->
+	
+	<!-- security처리를 안할 요청경로 -->
+	<http pattern="/ckedit" security="none"></http>
+
+	<!-- authority(권한 설정) -->
+	<http auto-config="true" use-expressions="true">
+		<access-denied-handler error-page="/main"/>
+		<headers>
+			<frame-options disabled="true"/>
+		</headers>		
+	
+		<!-- 권한 지정 -->
+			<!-- 처음 접근 페이지("/"요청 = home), permitAll: 모두 접근 -->	
+ 		<intercept-url pattern="/" access="permitAll"/>
+ 		<intercept-url pattern="/about" access="permitAll"/>
+ 		<intercept-url pattern="/home" access="isAnonymouse"/>
+ 		<intercept-url pattern="/processLogin" access="permitAll"/>
+ 		<intercept-url pattern="/images/**" access="permitAll"/>
+ 		<intercept-url pattern="/upimage/**" access="permitAll"/>
+ 		<intercept-url pattern="/pdf/**" access="permitAll"/>
+ 		<intercept-url pattern="/media/**" access="permitAll"/>
+ 			<!-- isAnonymous(): 로그인 안한 상태(비회원)만 접근 -->
+		<intercept-url pattern="/login" access="isAnonymous()"/>
+		<intercept-url pattern="/loginView" access="isAnonymous()"/>
+		<intercept-url pattern="/join" access="isAnonymous()"/>
+		<intercept-url pattern="/joinView" access="isAnonymous()"/>
+		<intercept-url pattern="/gredirect" access="isAnonymous()"/>
+		<intercept-url pattern="/nredirect" access="isAnonymous()"/>
+		<intercept-url pattern="/kredirect" access="isAnonymous()"/>
+			<!-- hasRole(): ()안의 권한을 획득한 사람만 접근 -->
+		<intercept-url pattern="/**" access="hasAnyRole('ROLE_USER','ROLE_ADMIN', 'ROLE_MANAGE', 'ROLE_TEMPORARY_USER')" requires-channel="https"/>
+			<!--
+			requires-channel: https 프로토콜 방식을 요구함(보안처리된 프로토콜).
+			Role에는 ROLE_USER, ROLE_ADMIN, ROLE_MANAGE, ROLE_TEMPORARY_USER등이 있음 
+			권한 하나를 지정할때는 hasRole(), 여러개를 대상으로할때는 hasAnyRole-->
+		<!-- form-login: 로그인 관련 사항 설정 -->
+		<form-login 
+			login-processing-url="/login"
+			login-page="/loginView"
+			username-parameter="pid"
+			password-parameter="ppw"
+			default-target-url="/main"
+			authentication-failure-url="/processLogin?error=1"
+			always-use-default-target="true"
+		/>
+
+		<!-- logout: 로그아웃 관련 사항 설정(스프링에서는 로그아웃도 form을 통해 진행)-->
+		<logout 
+			invalidate-session="true" 
+			logout-url="/logout"
+			logout-success-url="/processLogin?logout=1"
+			delete-cookies="JSESSIONID,remember-me"
+		/>
+
+		<!-- 로그아웃 없이 화면을 벗어났을때 권한 정보를 기억할 쿠키 지정 -->
+		<remember-me
+			remember-me-parameter="remember-me" 
+			remember-me-cookie="remember-me" 
+			key="kookskey" 
+			token-validity-seconds="3600"
+		/>
+		<!-- CSRF(Cross-site Request Forgery): 
+		서로 다른 사이트 사이의 요청을 위조해서 다른 사이트 보안에 접근하는 해킹 방식을 예방하기 위해 사용 -->
+		<csrf disabled="false"/>
+	</http>
+	
+	<!-- Authentication 처리(DB를 이용한 인증) -->
+	<authentication-manager>
+		<authentication-provider user-service-ref="customUserDetailsService">
+			<password-encoder ref="passwordEncoder"/>
+		</authentication-provider>
+	</authentication-manager>
+	<!-- 인증처리할 class bean: 개발할때 직접 설정 -->
+	<beans:bean id="customUserDetailsService" class="com.kook.ezenPJT.security.CustomUserDetailsService"/>
+	<!-- SPRING 제공 password 인코더 --> 
+	<beans:bean id="passwordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>
+
+</beans:beans>

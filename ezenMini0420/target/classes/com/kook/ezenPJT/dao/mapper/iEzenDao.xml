@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- root element는 mapper -->
+<!--속성 namespace는 IDao interface의 경로 -->
+<mapper namespace="com.kook.ezenPJT.dao.IEzenDao">
+	<insert id="join" parameterType="com.kook.ezenPJT.dto.EzenJoinDto">
+		INSERT INTO EZENUSER(PID,PPW,PADDRESS,PHOBBY,PPROFILE) 
+		VALUES(#{pid},#{ppw},#{paddress},#{phobby},#{pprofile})
+	</insert>
+	<select id="login" resultType="com.kook.ezenPJT.dto.EzenJoinDto">
+		SELECT * FROM EZENUSER WHERE PID = #{pid} 
+	</select>
+	<select id="recipeList" resultType="com.kook.ezenPJT.dto.RecipeDto">
+		SELECT * FROM RECIPE ORDER BY RID DESC
+	</select>
+	<insert id="recipeWrite" parameterType="com.kook.ezenPJT.dto.RecipeDto">
+		INSERT INTO RECIPE (RID,RCLASS,RTRNAME,RTITLE,RPHOTO,RCONTENT,RPRICE,RADDRESS) 
+		VALUES (RECIPE_SEQ.NEXTVAL,#{rClass},#{rtrName},#{rTitle},#{rPhoto},#{rContent},#{rPrice},#{rAddress})
+	</insert>
+	<select id="recipeDetails" resultType="com.kook.ezenPJT.dto.RecipeDto">
+		SELECT * FROM RECIPE WHERE RID = #{rId}
+	</select>
+	<insert id="recipeOrder" parameterType="com.kook.ezenPJT.dto.RecipeOrderDto">
+		INSERT INTO RECIPEORDER (ROID,ROUSER,ROQUANTY,ROPHONENO,ROUSERADDR,ROTITLE,ROPRICE,ROTOTAL,RPID)
+		VALUES (RECIPEORDER_SEQ.NEXTVAL,#{rOuser},#{rOquanty},#{rOphoneNo},#{rOuserAddr},#{rOtitle},#{rOprice},#{rOquanty}*#{rOprice},#{rPid})
+	</insert>
+	<select id="recipeOrderList" parameterType="String" resultType="com.kook.ezenPJT.dto.RecipeOrderDto">
+		SELECT * FROM RECIPEORDER WHERE ROUSER = #{oUser} ORDER BY ROID DESC
+	</select>
+	<update id="adminAuth" parameterType="com.kook.ezenPJT.dto.EzenJoinDto">
+		UPDATE EZENUSER SET AUTH = #{auth} WHERE PID = #{pid}
+	</update>
+	<select id="list" resultType="com.kook.ezenPJT.dto.EzenBoardDto">
+		<!-- mybatis 태그나 키워드 등에 사용되는 문자를 일반 문자로 사용할때는 
+			<![CDATA[  ]]> 안에 sql문을 작성한다.
+			ROWNUM은 oracle에서 제공하는 가상의 행번호로 그 이름을 rnum을 사용
+			내부 SELECT문의 결과를 A라 지칭해서 중간 SELECT문의 A로 사용
+			A.*은 A의 모든 결과
+			-->
+		<![CDATA[
+		SELECT * FROM (
+			SELECT A.*, ROWNUM AS RNUM FROM (
+				SELECT * FROM MVC_BOARD ORDER BY BGROUP DESC, BSTEP ASC)
+			A)
+		WHERE RNUM < 11
+		]]>	
+	</select>
+	<select id="pageList" resultType="com.kook.ezenPJT.dto.EzenBoardDto">
+		<![CDATA[
+			SELECT * FROM (
+				SELECT A.*, ROWNUM AS RNUM FROM (
+					SELECT * FROM MVC_BOARD ORDER BY BGROUP DESC, BSTEP ASC
+				)A
+			) WHERE RNUM >= #{startNo} AND RNUM < #{startNo} + 9
+		]]>
+	</select>
+	<select id="searchList" resultType="com.kook.ezenPJT.dto.EzenBoardDto">
+		SELECT * FROM MVC_BOARD ORDER BY BGROUP DESC,BSTEP ASC
+	</select>
+	<insert id="bWrite" parameterType="com.kook.ezenPJT.dto.EzenBoardDto">
+		INSERT INTO MVC_BOARD(BID,BNAME,BTITLE,BCONTENT,BHIT,BGROUP,BSTEP,BINDENT)
+		VALUES(MVC_BOARD_SEQ.nextval,#{bName},#{bTitle},#{bContent},0,MVC_BOARD_SEQ.currval,0,0)
+	</insert>
+	<select id="contentView" parameterType="int" resultType="com.kook.ezenPJT.dto.EzenBoardDto">
+		SELECT * FROM MVC_BOARD WHERE BID = #{bId}
+	</select>
+	<update id="upHit" parameterType="int">
+		UPDATE MVC_BOARD SET BHIT = BHIT+1 WHERE BID = #{bId} 
+	</update>
+	<update id="modify" parameterType="com.kook.ezenPJT.dto.EzenBoardDto">
+		UPDATE MVC_BOARD SET BTITLE=#{bTitle}, BCONTENT=#{bContent} WHERE BID = #{bId} 
+	</update>
+	<delete id="delete" parameterType="int">
+		DELETE FROM MVC_BOARD WHERE BID = #{bId}
+	</delete>
+	<select id="replyView" parameterType="int" resultType="com.kook.ezenPJT.dto.EzenBoardDto">
+		SELECT * FROM MVC_BOARD WHERE BID = #{bId}	
+	</select>
+	<insert id="reply" parameterType="com.kook.ezenPJT.dto.EzenBoardDto">
+		INSERT INTO MVC_BOARD (BID,BNAME,BTITLE,BCONTENT,BHIT,BGROUP,BSTEP,BINDENT)
+		VALUES (MVC_BOARD_SEQ.nextval,#{bName},#{bTitle},#{bContent},#{bHit},#{bGroup},#{bStep}+1,#{bIndent}+1)
+	</insert>
+	<update id="replyShape" parameterType="com.kook.ezenPJT.dto.EzenBoardDto">
+		<![CDATA[
+			UPDATE MVC_BOARD SET BSTEP= #{bStep}+1 WHERE BGROUP = #{bGroup} AND BSTEP > #{bStep}
+		]]>
+	</update>
+	<insert id="editorInsert" parameterType="com.kook.ezenPJT.dto.EditorDto">
+		INSERT INTO EDITOR (EDID,EDUSER,EDTITLE,EDITOR)
+		VALUES (EDITOR_SEQ.NEXTVAL,#{edUser},#{edTitle},#{editor})
+	</insert>
+	<select id="editorList" parameterType="String" resultType="com.kook.ezenPJT.dto.EditorDto">
+		<!-- 유저가 올린 내용만 원할때
+		SELECT * FROM EDITOR WHERE EDID=#{username} ORDER BY EDDATE DESC -->
+		<!-- 전체 글 -->
+		SELECT * FROM EDITOR ORDER BY EDDATE DESC
+	</select>
+	<select id="editorDetail" parameterType="int" resultType="com.kook.ezenPJT.dto.EditorDto">
+		SELECT * FROM EDITOR WHERE EDID=#{edid}
+	</select>
+	<insert id="calendarInsert" parameterType="com.kook.ezenPJT.dto.FullCalendarDto">
+		INSERT INTO FULLCALENDAR 
+		VALUES(FULLCALENDAR_SEQ.nextval,#{cId},#{cTitle},#{cStart},#{cEnd},#{tStart},#{tEnd},#{cAllDay})
+	</insert>
+	<select id="calendarList" resultType="com.kook.ezenPJT.dto.FullCalendarDto" parameterType="String">
+		SELECT * FROM FULLCALENDAR WHERE CID = #{cId} ORDER BY CNO ASC
+	</select>
+	<update id="calendarUpdate" parameterType="com.kook.ezenPJT.dto.FullCalendarDto">
+		UPDATE FULLCALENDAR SET CSTART=#{cStart}, CEND=#{cEnd}, CTITLE=#{cTitle} 
+		WHERE CNO = #{cNo}
+	</update>
+	<delete id="calendarDelete" parameterType="com.kook.ezenPJT.dto.FullCalendarDto">
+		DELETE FROM FULLCALENDAR WHERE CNO=#{cNo}
+	</delete>
+	<select id="dashBoardList" resultType="com.kook.ezenPJT.dto.DashBoardDto">
+		SELECT * FROM DASHBOARD ORDER BY REGDATE ASC
+	</select>
+	<insert id="dashBoardWrite" parameterType="com.kook.ezenPJT.dto.DashBoardDto">
+		INSERT INTO DASHBOARD (MONTH,PCQTY,MONITORQTY) VALUES(#{month},#{pcQty},#{monitorQty})
+	</insert>
+	<!-- authDB(social login) -->
+	<select id="authDB" parameterType="String" resultType="com.kook.ezenPJT.dto.AuthUserDto">
+		SELECT * FROM AUTHUSER WHERE AUTHUSERNAME = #{authUsername}
+	</select>
+	<insert id="authInsert" parameterType="com.kook.ezenPJT.dto.AuthUserDto">
+		INSERT INTO AUTHUSER (AUTHUSERNAME, AUTHPW) VALUES(#{authUsername}, #{authPw})
+	</insert>
+	<select id="authLogin" parameterType="String" resultType="com.kook.ezenPJT.dto.AuthUserDto">
+		SELECT * FROM AUTHUSER WHERE AUTHUSERNAME = #{username}
+	</select>
+</mapper>
