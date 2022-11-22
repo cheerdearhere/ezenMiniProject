@@ -1,6 +1,6 @@
 # ezenMiniProject
 학원에서 진행한 수업용 프로젝트
-spring framework/ mybatis/ 
+spring framework/ mybatis/ <br/>
 
 기본 CRUD 기능, review board
 twbs pagination
