@@ -119,7 +119,7 @@ public class EzenController {
 
 /*client에서 request를 ajax로 보내고 그 response를 jsp로 보내면 
  * @ResponseBody없이 페이지가 data로 들어간다.
- * JSON은 어노테이션의 도움으로 SPRING이 처리하기때문에 필요하다.
+ * JSON은 어노테이션의 도움으로 SPRING이 처리하기때문에 필요하다. 
  */
 //회원가입 form
 	@RequestMapping("/joinView")
