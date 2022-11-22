@@ -115,7 +115,7 @@ public class EzenController {
 	@Autowired
 	private GoogleConnectionFactory googleConnectionFactory;
 	@Autowired
-	private OAuth2Parameters googleOAuth2Parameters;
+	private OAuth2Parameters googleOAuth2Parameters; 
 
 /*client에서 request를 ajax로 보내고 그 response를 jsp로 보내면 
  * @ResponseBody없이 페이지가 data로 들어간다.
